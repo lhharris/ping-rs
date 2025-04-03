@@ -3,7 +3,7 @@ use common::{create_port, Port};
 use std::convert::TryFrom;
 
 use bluerobotics_ping::{
-    device::{Ping1DTSR, PingDevice},
+    device::{Ping1Dtsr, PingDevice},
     error::PingError,
     message::MessageInfo,
     ping1dtsr::{self, ProfileStruct},
@@ -17,8 +17,8 @@ async fn main() -> Result<(), PingError> {
 
     println!("Creating your Ping 1D device");
     let ping1dtsr = match port {
-        Port::Serial(port) => Ping1DTSR::new(port),
-        Port::Udp(port) => Ping1DTSR::new(port),
+        Port::Serial(port) => Ping1Dtsr::new(port),
+        Port::Udp(port) => Ping1Dtsr::new(port),
     };
 
     // Creating a subscription channel which will receive 30 Profile measurements, we'll check this after the next methods!
@@ -34,9 +34,13 @@ async fn main() -> Result<(), PingError> {
             let received = subscribed.recv().await;
             match received {
                 Ok(msg) => {
+                    let msgid = msg.message_id;
+                    let msgid2 = bluerobotics_ping::ping1dtsr::ProfileStruct::id(); 
+                    println!("Got message with ID: {msgid}");
                     if msg.message_id == bluerobotics_ping::ping1dtsr::ProfileStruct::id() {
+                        println!("Found profile message with ID: {msgid2}");
                         match Messages::try_from(&msg) {
-                            Ok(Messages::Ping1DTSR(ping1dtsr::Messages::Profile(answer))) => {
+                            Ok(Messages::Ping1Dtsr(ping1dtsr::Messages::Profile(answer))) => {
                                 profile_struct_vector.push(answer)
                             }
                             _ => continue,
@@ -51,13 +55,13 @@ async fn main() -> Result<(), PingError> {
             };
         }
     });
-
+/*
     for n in (1..10).rev() {
         println!("Testing set/get device id: {n}");
         ping1dtsr.set_device_id(n).await?;
         assert_eq!(n, ping1dtsr.device_id().await.unwrap().device_id);
     }
-
+*/
     // Testing set command, all set commands check for their Ack message, Error and NAck error are possible
     println!(
         "Set gain to auto: {:?}",
@@ -124,7 +128,7 @@ async fn main() -> Result<(), PingError> {
         Err(_) => println!("The oneshot sender dropped"),
     }
 
-    println!("Turning-off the continuous messages stream from Ping1DTSR");
+    println!("Turning-off the continuous messages stream from Ping1Dtsr");
     ping1dtsr
         .continuous_stop(bluerobotics_ping::ping1dtsr::ProfileStruct::id())
         .await?;

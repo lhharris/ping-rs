@@ -26,7 +26,7 @@ use crate::{
 // Make devices available, each device uses Common and PingDevice.
 pub use crate::ping1d::Device as Ping1D;
 pub use crate::ping360::Device as Ping360;
-pub use crate::ping1dtsr::Device as Ping1DTSR;
+pub use crate::ping1dtsr::Device as Ping1Dtsr;
 
 #[derive(Debug)]
 pub struct Common {
