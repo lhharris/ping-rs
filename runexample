@@ -1,0 +1,36 @@
+#!/bin/bash
+
+VALID_LEVELS=("trace" "debug" "info" "warn" "error" "off")
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <log-level> [enable-backtrace]"
+  echo "Valid log levels: ${VALID_LEVELS[*]}"
+  echo "Optionally set the second parameter to 'true' to enable RUST_BACKTRACE=1"
+  exit 1
+fi
+
+log_level="$1"
+enable_backtrace="$2"
+is_valid=false
+
+for level in "${VALID_LEVELS[@]}"; do
+  if [ "$log_level" == "$level" ]; then
+    is_valid=true
+    break
+  fi
+done
+
+if [ "$is_valid" = false ]; then
+  echo "Invalid log level: $log_level"
+  echo "Valid levels: ${VALID_LEVELS[*]}"
+  exit 1
+fi
+
+# Build the env var string
+env_string="RUST_LOG=$log_level"
+if [ "$enable_backtrace" == "true" ]; then
+  env_string="$env_string RUST_BACKTRACE=1"
+fi
+
+# Run the command
+eval "$env_string cargo run --example tsr1000 -- --serial-port /dev/ttyUSB1 --serial-baud-rate 115200"
